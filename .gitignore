@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+.env.local
+
+# ML models (will be generated on deploy)
+backend/ml_models/*.pkl
+backend/ml_models/*.json
+backend/models/*.pkl
+backend/models/*.json
+
+# Database
+*.db
+backend/database/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

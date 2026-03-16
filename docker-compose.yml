@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: churnsight_db
+    environment:
+      POSTGRES_USER: churn_user
+      POSTGRES_PASSWORD: churn_pass
+      POSTGRES_DB: churndb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U churn_user -d churndb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: churnsight_api
+    environment:
+      DATABASE_URL: postgresql://churn_user:churn_pass@db:5432/churndb
+      MODEL_PATH: ml_models/churn_model.pkl
+      SCALER_PATH: ml_models/scaler.pkl
+      META_PATH: ml_models/meta.json
+      LOG_LEVEL: INFO
+      CORS_ORIGINS: http://localhost:3000,http://localhost:80
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/ml_models:/app/ml_models
+
+  frontend:
+    build: ./frontend
+    container_name: churnsight_ui
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
