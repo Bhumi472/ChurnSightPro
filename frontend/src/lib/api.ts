@@ -1,6 +1,6 @@
 import type { CustomerInput, PredictionResult, PredictionRecord, StatsData, HealthData } from '@/types'
 
-const BASE = '/api'
+const BASE = 'https://churnsightpro-production.up.railway.app/api'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
