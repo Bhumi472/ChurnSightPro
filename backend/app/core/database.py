@@ -2,21 +2,16 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from app.core.config import settings
 
-# Fix Railway PostgreSQL URL (Railway gives postgres:// but SQLAlchemy needs postgresql://)
-db_url = settings.DATABASE_URL
-if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./database/churn.db")
 
-is_sqlite = db_url.startswith("sqlite")
+# Fix Railway postgres:// URL if needed
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(
-    db_url,
-    connect_args={"check_same_thread": False} if is_sqlite else {},
-    pool_pre_ping=True,
-    pool_size=5 if not is_sqlite else 1,
-    max_overflow=10 if not is_sqlite else 0,
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -33,6 +28,6 @@ def get_db():
 
 def init_db():
     from app.models import prediction  # noqa
-    if is_sqlite:
+    if "sqlite" in DATABASE_URL:
         os.makedirs("database", exist_ok=True)
     Base.metadata.create_all(bind=engine)
